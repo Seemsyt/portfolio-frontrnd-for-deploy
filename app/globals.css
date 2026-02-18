@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+.Bg{
+    background-image: url('/bg2.jpg');
+}
+body{
+    color: aliceblue;
+}
