@@ -15,7 +15,7 @@ export default function Register() {
   })
  const login = async () => {
   try {
-    const res = await axios.post('http://127.0.0.1:8000/api/auth/login/', {
+    const res = await axios.post('https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/login/', {
       username: form.username,
       password: form.password
     });
@@ -32,7 +32,7 @@ const handleRegister = async (e) => {
   e.preventDefault();
   try {
     const response = await axios.post(
-      'http://127.0.0.1:8000/api/auth/register/',
+      'https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/register/',
       form
     );
 

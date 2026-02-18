@@ -10,7 +10,7 @@ export default function Profile(){
 
     const token = localStorage.getItem("access")
 
-    fetch("http://127.0.0.1:8000/api/auth/profile/", {
+    fetch("https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/profile/", {
 
       headers:{
         Authorization: `Bearer ${token}`
