@@ -1,107 +1,136 @@
-"use client"
-import Image from "next/image";
-import Card from './components/Card'
+"use client";
+
+import Card from "./components/Card";
 import Link from "next/link";
-// import { useEffect ,useState} from "react";
-import Skill from './components/skill'
+import Skill from "./components/skill";
 import { motion } from "motion/react";
+
 export default function Home() {
-
-const container = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.2
-    }
-  }
-}
-
-const item = {
-  hidden: { opacity: 0, y: 50 },
-  show: { opacity: 1, y: 0 }
-}
-
   return (
-    
-    <>
-    <motion.section initial={{ opacity: 0, y: 100 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.8 }} className="text-white ">
-     <main className="bg-[url(/bg2.jpg)] bg-center bg-cover flex items-center justify-center flex-col w-full h-screen overflow-x-hidden">
-
-      {/* Heading */}
-      <motion.h1
-        initial={{ opacity: 0, y: -80 }}
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+      <motion.section
+        initial={{ opacity: 0, y: 60 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="font-bold text-center p-4 text-3xl md:text-8xl"
+        transition={{ duration: 0.7 }}
+        className="relative overflow-hidden border-b border-white/10"
       >
-        Welcome To Portfolio
-      </motion.h1>
+        <div className="absolute inset-0 bg-[url(/bg2.jpg)] bg-cover bg-center opacity-30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/75 to-cyan-900/45" />
 
+        <main className="relative mx-auto flex min-h-[88vh] w-full max-w-6xl items-center px-6 pb-16 pt-36 md:pt-40">
+          <div className="max-w-3xl">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="mb-5 inline-block rounded-full border border-cyan-200/20 bg-cyan-200/10 px-4 py-1 text-sm font-medium tracking-wide text-cyan-200"
+            >
+              Full-Stack Portfolio & Product Development
+            </motion.p>
 
-      {/* Subtitle */}
-      <motion.div
-        initial={{ opacity: 0, rotate: 10, y: 40 }}
-        animate={{ opacity: 1, rotate: 0, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-        className="font-bold text-2xl md:text-4xl text-center"
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-4xl font-extrabold leading-tight md:text-6xl"
+            >
+              Build a professional digital presence that drives trust.
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="mt-5 max-w-2xl text-base text-slate-200 md:text-lg"
+            >
+              I design and ship modern portfolio and business websites with
+              clean UI, fast performance, and practical backend integration.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.6 }}
+              className="mt-9 flex flex-wrap gap-3"
+            >
+              <Link
+                href="/projects"
+                className="rounded-xl bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-cyan-200"
+              >
+                View Projects
+              </Link>
+              <Link
+                href="/contact"
+                className="rounded-xl border border-white/30 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+              >
+                Contact Me
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="mt-10 grid grid-cols-3 gap-3 sm:max-w-xl"
+            >
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
+                <p className="text-2xl font-bold text-cyan-200">20+</p>
+                <p className="text-xs text-slate-300">Delivered pages</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
+                <p className="text-2xl font-bold text-cyan-200">4+</p>
+                <p className="text-xs text-slate-300">Core stacks</p>
+              </div>
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
+                <p className="text-2xl font-bold text-cyan-200">100%</p>
+                <p className="text-xs text-slate-300">Client focus</p>
+              </div>
+            </motion.div>
+          </div>
+        </main>
+      </motion.section>
+
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="mx-auto w-full max-w-6xl px-4 py-14 md:py-20"
       >
-        Take yourself online with us
-      </motion.div>
+        <div className="mb-6 text-center">
+          <h2 className="text-3xl font-bold text-cyan-200">Featured Projects</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-slate-300">
+            Selected work focused on practical design, strong UX, and reliable
+            backend connectivity.
+          </p>
+        </div>
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03]">
+          <Card />
+        </div>
+      </motion.section>
 
-
-      {/* Buttons */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="mt-9 flex gap-4"
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="mx-auto mb-16 w-full max-w-6xl px-4"
       >
-
-        <motion.button
-          whileHover={{ scale: 1.07 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-3 border-2 border-gray-500 rounded-2xl hover:text-black hover:bg-white w-[150px] cursor-pointer"
-        >
-          <Link href="/contact">Contact</Link>
-        </motion.button>
-
-
-        <motion.button
-          whileHover={{ scale: 1.07 }}
-          whileTap={{ scale: 0.95 }}
-          className="p-3 border-2 border-gray-500 rounded-2xl bg-white text-black cursor-pointer w-[150px]"
-        >
-          <Link href="/projects">Projects</Link>
-        </motion.button>
-
-      </motion.div>
-
-    </main>
-    </motion.section>
-    <motion.section initial={{ opacity: 0 }}
-  whileInView={{ opacity: 1 }}
-  transition={{ duration: 0.8 }}>
-      <h1 className=" text-2xl text-center font-bold text-red-300">Some Projects</h1>
-      <Card/>
-    </motion.section>
-    <motion.section initial={{ opacity: 0 ,x:-100 }}
-  whileInView={{ opacity: 1 , x:0 }}
-  transition={{ duration: 0.8 }}>
-      <div className="p-2 pl-4"><h1 className="font-bold text-red-300 text-2xl p-2 text-center">About the Developer</h1>
-      <h2 className="font-bold  text-[20px]"> Hey I am Seems</h2>
-      <h2 className="text-[15px] font-bold">Take your self and your bussisness online with me</h2>
-      <motion.p  initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.8 }}>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Pariatur necessitatibus magni rerum labore, alias excepturi sunt ea maiores voluptates cum, a sed voluptas dolores ipsum modi distinctio? Blanditiis, fugiat porro.</motion.p>
-      <h2 className="text-2xl text-red-300 text-center">Coding Skills
-      </h2>
-<div>
-  <Skill/>
-</div>
-      </div>
-    </motion.section>
-    </>
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-cyan-300/[0.05] p-6 md:p-10">
+          <h2 className="text-center text-3xl font-bold text-cyan-200">
+            About the Developer
+          </h2>
+          <p className="mx-auto mt-3 max-w-3xl text-center text-slate-300">
+            Hey, I am Seems. I build responsive and scalable web products that
+            help creators and businesses present themselves professionally
+            online.
+          </p>
+          <h3 className="mt-8 text-center text-2xl font-semibold text-white">
+            Core Skills
+          </h3>
+          <Skill />
+        </div>
+      </motion.section>
+    </div>
   );
 }

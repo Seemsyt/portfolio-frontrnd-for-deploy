@@ -1,69 +1,108 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion } from 'motion/react'
-import { button, div } from 'motion/react-client'
+"use client";
+import Image from "next/image";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 
 const Navbar = () => {
-  const pathname = usePathname()
-const [open, setOpen] = useState(false)
- 
-    const [loggedIn, setLoggedIn] = useState(false)
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
-  useEffect(()=>{
-    const token = localStorage.getItem("access")
-    setLoggedIn(!!token)
-    setOpen(false)
-  }, [pathname])
+  const [loggedIn, setLoggedIn] = useState(false);
 
-  const logout = ()=>{
-    localStorage.removeItem("access")
-    localStorage.removeItem("refresh")
-    setLoggedIn(false)
-  }
-  
-  
- 
+  useEffect(() => {
+    const token = localStorage.getItem("access");
+    setLoggedIn(!!token);
+    setOpen(false);
+  }, [pathname]);
+
+  const logout = () => {
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    setLoggedIn(false);
+  };
 
   const container = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.2
-    }
-  }
-}
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
 
-const item = {
-  hidden: { opacity: 0, y: 50 },
-  show: { opacity: 1, y: 0 }
-}
+  const item = {
+    hidden: { opacity: 0, y: 50 },
+    show: { opacity: 1, y: 0 },
+  };
+
+  const mobileMenu = {
+    hidden: { x: "100%", opacity: 0.9 },
+    show: {
+      x: 0,
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut", when: "beforeChildren" },
+    },
+    exit: {
+      x: "100%",
+      opacity: 0.9,
+      transition: { duration: 0.25, ease: "easeIn" },
+    },
+  };
+
+  const mobileItem = {
+    hidden: { opacity: 0, x: 24 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.25 } },
+  };
 
   return (
     <>
-      <motion.nav initial={{ y: -80, opacity: 0 }}
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }} className='bg-gray-900 flex justify-between p-4 text-lg items-center'>
-
-        <div className="logo text-red-300 text-2xl font-bold"><Link href='/'>Seems</Link></div>
-
+        transition={{ duration: 0.6 }}
+        className="fixed top-4 left-1/2 -translate-x-1/2 flex justify-between p-4 text-lg items-center w-[92vw] max-w-6xl mx-auto z-50 rounded-2xl border border-white/20 bg-black/30 backdrop-blur-md shadow-lg opacity-0"
+      >
+        <div className="logo text-red-300 text-2xl font-bold">
+          <Link href="/">
+            <Image src="/logo.png" alt="Seems" width={100} height={200}></Image>
+          </Link>
+        </div>
 
         <div className="menu flex gap-2 items-center">
           <div className="">
-            <ul variants={container}
-      initial="hidden"
-      animate="show" className='hidden md:flex gap-4 items-center'>
-              <li variants={item}><Link href='/'>Home</Link></li>
-              <li variants={item}><Link href='/contact'>Contact us</Link></li>
-              <li variants={item}><Link href='/pricing'>Pricing</Link></li>
-              <li variants={item}><Link href='/projects'>Project</Link></li>
-              <li>{!loggedIn&& <div><button className="px-2 py-2 border border-white text-white rounded-lg hover:bg-white hover:text-gray-700 transition">
-                  <Link href={'/login'}>Login</Link>
-                </button> <button className="px-2 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition">
-                 <Link href={'/register'}>Register</Link>
-                </button></div> }</li>
-            </ul>
+            <motion.ul
+              variants={container}
+              initial="hidden"
+              animate="show"
+              className="hidden md:flex gap-4 items-center"
+            >
+              <motion.li variants={item}>
+                <Link href="/">Home</Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link href="/contact">Contact us</Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link href="/pricing">Pricing</Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link href="/projects">Project</Link>
+              </motion.li>
+              <li>
+                {!loggedIn && (
+                  <div>
+                    <button className="px-2 py-2 border border-white text-white rounded-lg hover:bg-white hover:text-gray-700 transition">
+                      <Link href={"/login"}>Login</Link>
+                    </button>{" "}
+                    <button className="px-2 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition">
+                      <Link href={"/register"}>Register</Link>
+                    </button>
+                  </div>
+                )}
+              </li>
+            </motion.ul>
           </div>
           <div className="hidden md:block ">
             {/* <input
@@ -72,11 +111,18 @@ const item = {
               placeholder='Search...'
             />
             <button>🔍</button> */}
-             {loggedIn &&(<button className=' border-2 border-red-600 rounded-2xl p-1' onClick={logout}>logout</button>)}
+            {loggedIn && (
+              <button
+                className=" border-2 border-red-600 rounded-2xl p-1"
+                onClick={logout}
+              >
+                logout
+              </button>
+            )}
           </div>
 
-<div>
-  {/* <button
+          <div>
+            {/* <button
   className="md:hidden px-2 py-1 flex justify-center items-center mx-2 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
   aria-label="Search"
 >
@@ -96,61 +142,115 @@ const item = {
     <path d="m21 21-4.3-4.3" />
   </svg>
 </button> */}
-
-</div>
+          </div>
           {/* Mobile Toggle Button */}
-          <img
-            src={open ? '/cross.svg' : '/hambeger.svg'}
-            alt="menu toggle"
+          <button
             onClick={() => setOpen(!open)}
-            className="cursor-pointer w-[30px] md:hidden"
-          />
+            className="md:hidden rounded-full border border-white/30 bg-white/10 p-2 backdrop-blur-sm transition hover:bg-white/20"
+            aria-label="Toggle menu"
+          >
+            <img
+              src={open ? "/cross.svg" : "/hambeger.svg"}
+              alt="menu toggle"
+              className="w-6"
+            />
+          </button>
         </div>
       </motion.nav>
 
       {/* Mobile Sidebar */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/50 md:hidden"
-          onClick={() => setOpen(false)}
-        />
-      )}
-      <aside
-        className={`bg-gray-600 fixed top-0 right-0 h-screen w-1/2
-        transition-transform duration-300
-        ${open ? "translate-x-0" : "translate-x-full"}
-        md:hidden`}
-      >
-        <div className="relative">
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-[2px] md:hidden z-40"
+              onClick={() => setOpen(false)}
+            />
 
-          <img
-            src="/cross.svg"
-            alt="close"
-            onClick={() => setOpen(false)}
-            className="cursor-pointer w-[30px] absolute top-2 right-2"
-          />
+            <motion.aside
+              variants={mobileMenu}
+              initial="hidden"
+              animate="show"
+              exit="exit"
+              className="fixed top-0 right-0 z-50 h-screen w-[78%] max-w-xs md:hidden rounded-l-3xl border-l border-white/20 bg-slate-900/90 p-6 text-white shadow-2xl backdrop-blur-lg"
+            >
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute top-4 right-4 rounded-full border border-white/30 bg-white/10 p-2 transition hover:bg-white/20"
+                aria-label="Close menu"
+              >
+                <img src="/cross.svg" alt="close" className="w-5" />
+              </button>
 
-          <ul variants={container}
-      initial="hidden"
-      animate="show" className='pr-[70] pt-[45] flex flex-col gap-6 items-center text-white border-b-2' >
-              <li variants={item}><Link href='/'>Home</Link></li>
-              <li variants={item}><Link href='/contact'>Contact us</Link></li>
-              <li variants={item}><Link href='/pricing'>Pricing</Link></li>
-              <li variants={item}><Link href='/projects'>Project</Link></li>
-          </ul>
-        {!loggedIn&&(  <div className=' border-b-2 border-b-white'>
-            <Link href='/login'> <button className="px-2 py-1 m-1 border border-white text-white rounded-lg hover:bg-white hover:text-gray-700 transition">
-              Login
-            </button></Link>
-            <Link href='/register'> <button className="px-2 py-1 bg-white text-gray-700 rounded-lg hover:bg-gray-200 transition">
-              Register
-            </button></Link>
-          </div>)}
+              <motion.ul
+                variants={container}
+                initial="hidden"
+                animate="show"
+                className="mt-14 flex flex-col gap-4 text-lg"
+              >
+                <motion.li variants={mobileItem}>
+                  <Link
+                    href="/"
+                    className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                  >
+                    Home
+                  </Link>
+                </motion.li>
+                <motion.li variants={mobileItem}>
+                  <Link
+                    href="/contact"
+                    className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                  >
+                    Contact us
+                  </Link>
+                </motion.li>
+                <motion.li variants={mobileItem}>
+                  <Link
+                    href="/pricing"
+                    className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                  >
+                    Pricing
+                  </Link>
+                </motion.li>
+                <motion.li variants={mobileItem}>
+                  <Link
+                    href="/projects"
+                    className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                  >
+                    Project
+                  </Link>
+                </motion.li>
+              </motion.ul>
 
-        </div>
-      </aside>
+              {!loggedIn && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.25 }}
+                  className="mt-8 flex gap-2 border-t border-white/20 pt-5"
+                >
+                  <Link href="/login" className="w-1/2">
+                    <button className="w-full rounded-xl border border-white/30 bg-transparent px-3 py-2 font-medium text-white transition hover:bg-white hover:text-slate-900">
+                      Login
+                    </button>
+                  </Link>
+                  <Link href="/register" className="w-1/2">
+                    <button className="w-full rounded-xl bg-cyan-300 px-3 py-2 font-medium text-slate-900 transition hover:bg-cyan-200">
+                      Register
+                    </button>
+                  </Link>
+                </motion.div>
+              )}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

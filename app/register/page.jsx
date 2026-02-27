@@ -1,116 +1,134 @@
-"use client"
-import { useState } from "react"
-import { useRouter } from 'next/navigation';
-import { motion } from "motion/react"
-import Link from "next/link"
-import axios from "axios"
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import Link from "next/link";
+import axios from "axios";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
 
 export default function Register() {
-  const router =useRouter()
-      const [erors, setErors] = useState('')
-    const [form, setForm] = useState({
+  const router = useRouter();
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
     username: "",
     email: "",
-    password: ""
-  })
- const login = async () => {
-  try {
-    const res = await axios.post('https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/login/', {
+    password: "",
+  });
+
+  const autoLogin = async () => {
+    const res = await axios.post(`${API_BASE}/login/`, {
       username: form.username,
-      password: form.password
+      password: form.password,
     });
 
-    const data = res.data;
-    localStorage.setItem("access", data.access);
-    localStorage.setItem("refresh", data.refresh);
-  } catch (err) {
-    console.log("Login failed:", err.response?.data || err.message);
-    throw err; // propagate error to handleRegister
-  }
-};
-const handleRegister = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post(
-      'https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/register/',
-      form
-    );
+    localStorage.setItem("access", res.data.access);
+    localStorage.setItem("refresh", res.data.refresh);
+  };
 
-    console.log("Register success:", response.data);
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setErrors({});
 
-    // Wait for login to complete
-    await login();
-
-    // Redirect
-    router.push('/');
-  } catch (error) {
-    if (error.response) {
-      setErors(error.response.data);
-      console.log("Backend errors:", error.response.data);
-    } else {
-      console.log("Network or other error:", error.message);
+    try {
+      setSubmitting(true);
+      await axios.post(`${API_BASE}/register/`, form);
+      await autoLogin();
+      router.push("/");
+    } catch (error) {
+      const data = error?.response?.data;
+      if (data && typeof data === "object") {
+        setErrors({
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          general: data.detail || data.non_field_errors?.[0] || "Registration failed. Try again.",
+        });
+      } else {
+        setErrors({ general: "Registration failed. Try again." });
+      }
+    } finally {
+      setSubmitting(false);
     }
-  }
-};
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-
+    <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">
       <motion.div
-        initial={{ opacity: 0, y: 80 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-zinc-900 p-8 rounded-2xl w-[350px] shadow-lg"
+        className="mx-auto grid w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] md:grid-cols-2"
       >
+        <div className="hidden border-r border-white/10 bg-gradient-to-br from-cyan-900/30 to-slate-900 p-10 md:block">
+          <p className="inline-block rounded-full border border-cyan-200/20 bg-cyan-200/10 px-4 py-1 text-xs text-cyan-200">
+            New Account
+          </p>
+          <h1 className="mt-5 text-4xl font-bold leading-tight">
+            Create your account in minutes.
+          </h1>
+          <p className="mt-4 text-slate-300">
+            Register to publish and manage your work with a clean and secure workflow.
+          </p>
+        </div>
 
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Register
-        </h1>
+        <div className="p-6 md:p-10">
+          <h2 className="text-3xl font-bold text-cyan-200">Register</h2>
+          <p className="mt-2 text-sm text-slate-300">Set up your account details to get started.</p>
 
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+          <form onSubmit={handleRegister} className="mt-6 flex flex-col gap-4">
+            <input
+              type="text"
+              placeholder="Username"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              className="rounded-xl border border-white/15 bg-slate-900/80 p-3 outline-none transition focus:border-cyan-300"
+            />
+            {errors.username && <p className="text-sm text-red-300">{errors.username}</p>}
 
-          <input
-            type="text"
-            placeholder="Username"
-            className="p-3 rounded bg-zinc-800 outline-none focus:ring-2 focus:ring-white"
-            onChange={(e)=>setForm({...form,username:e.target.value})}/>
-            
-            {erors.username && <p className="text-red-500">{erors.username}</p>}
+            <input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="rounded-xl border border-white/15 bg-slate-900/80 p-3 outline-none transition focus:border-cyan-300"
+            />
+            {errors.email && <p className="text-sm text-red-300">{errors.email}</p>}
 
-          <input
-            type="email"
-            placeholder="Email"
-            className="p-3 rounded bg-zinc-800 outline-none focus:ring-2 focus:ring-white"
-            onChange={(e)=>setForm({...form,email:e.target.value})} />
-            {erors.email && <p className="text-red-500">{erors.email}</p>}
+            <input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="rounded-xl border border-white/15 bg-slate-900/80 p-3 outline-none transition focus:border-cyan-300"
+            />
+            {errors.password && <p className="text-sm text-red-300">{errors.password}</p>}
 
-          <input
-            type="password"
-            placeholder="Password"
-            className="p-3 rounded bg-zinc-800 outline-none focus:ring-2 focus:ring-white"
-            onChange={(e)=>setForm({...form,password:e.target.value})}
-          />
-          {erors.password && <p className="text-red-500">{erors.password}</p>}
+            {errors.general && <p className="text-sm text-red-300">{errors.general}</p>}
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-white text-black p-3 rounded font-semibold"
-            type="submit" >
-            Register
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="rounded-xl bg-cyan-300 p-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Creating account..." : "Register"}
+            </motion.button>
+          </form>
 
-        </form>
-
-        <p className="text-center mt-4 text-gray-400">
-          Already have account?{" "}
-          <Link href="/login" className="text-white underline">
-            Login
-          </Link>
-        </p>
-
+          <p className="mt-5 text-sm text-slate-300">
+            Already have an account?{" "}
+            <Link href="/login" className="font-semibold text-cyan-200 hover:underline">
+              Login
+            </Link>
+          </p>
+        </div>
       </motion.div>
-
-    </div>
-  )
+    </section>
+  );
 }
