@@ -39,7 +39,7 @@ const Footer = () => {
             Contact
           </h3>
           <div className="mt-3 space-y-2 text-sm text-slate-300">
-            <p>United States</p>
+            <p>India</p>
             <a
               href="mailto:seems.developer@gmail.com"
               className="block transition hover:text-cyan-200"

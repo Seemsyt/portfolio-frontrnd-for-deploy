@@ -83,7 +83,7 @@ export default function ContactPage() {
               </a>
             </p>
             <p>Phone: (+91) 9685-8227-21</p>
-            <p>Location: United States</p>
+            <p>Location: India</p>
           </div>
         </div>
 
