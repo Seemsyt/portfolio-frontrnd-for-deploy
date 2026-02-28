@@ -7,8 +7,9 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
+  (process.env.NEXT_PUBLIC_API_URL ||
+    "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/").replace(/\/+$/, "") +
+  "/";
 
 export default function Login() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function Login() {
           general: data.detail || data.non_field_errors?.[0] || "Login failed. Try again.",
         });
       } else {
-        setErrors({ general: "Login failed. Try again." });
+        setErrors({ general: error?.message || "Login failed. Try again." });
       }
     } finally {
       setSubmitting(false);

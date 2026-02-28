@@ -13,8 +13,9 @@ const Navbar = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const API_BASE =
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
+    (process.env.NEXT_PUBLIC_API_URL ||
+      "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/").replace(/\/+$/, "") +
+    "/";
 
   useEffect(() => {
     const syncNavAuthState = async () => {

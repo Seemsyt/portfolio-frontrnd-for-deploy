@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
+  (process.env.NEXT_PUBLIC_API_URL ||
+    "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/").replace(/\/+$/, "") +
+  "/";
 
 export default function Profile() {
   const [data, setData] = useState(null);
