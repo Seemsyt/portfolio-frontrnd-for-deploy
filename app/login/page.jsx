@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import axios from "axios";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -12,7 +12,6 @@ const API_BASE =
 
 export default function Login() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -42,7 +41,10 @@ export default function Login() {
         localStorage.removeItem("dashboard_secret");
       }
 
-      const nextPath = searchParams.get("next") || "/";
+      const nextPath =
+        typeof window !== "undefined"
+          ? new URLSearchParams(window.location.search).get("next") || "/"
+          : "/";
       router.push(nextPath);
     } catch (error) {
       const data = error?.response?.data;
