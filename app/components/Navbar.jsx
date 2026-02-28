@@ -10,17 +10,41 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
 
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const API_BASE =
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
 
   useEffect(() => {
     const token = localStorage.getItem("access");
     setLoggedIn(!!token);
+    setIsAdmin(false);
+
+    if (token) {
+      fetch(`${API_BASE}profile/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          setIsAdmin(!!(data?.is_superuser || data?.is_staff));
+        })
+        .catch(() => {
+          setIsAdmin(false);
+        });
+    }
+
     setOpen(false);
-  }, [pathname]);
+  }, [pathname, API_BASE]);
 
   const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("dashboard_secret");
     setLoggedIn(false);
+    setIsAdmin(false);
+    setOpen(false);
   };
 
   const container = {
@@ -90,6 +114,11 @@ const Navbar = () => {
               <motion.li variants={item}>
                 <Link href="/projects">Project</Link>
               </motion.li>
+              {loggedIn && isAdmin && (
+                <motion.li variants={item}>
+                  <Link href="/xyzseemsxyz/projects_admin">CMS Dashboard</Link>
+                </motion.li>
+              )}
               <li>
                 {!loggedIn && (
                   <div>
@@ -224,6 +253,16 @@ const Navbar = () => {
                     Project
                   </Link>
                 </motion.li>
+                {loggedIn && isAdmin && (
+                  <motion.li variants={mobileItem}>
+                    <Link
+                      href="/xyzseemsxyz/projects_admin"
+                      className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                    >
+                      CMS Dashboard
+                    </Link>
+                  </motion.li>
+                )}
               </motion.ul>
 
               {!loggedIn && (
@@ -243,6 +282,22 @@ const Navbar = () => {
                       Register
                     </button>
                   </Link>
+                </motion.div>
+              )}
+
+              {loggedIn && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.25 }}
+                  className="mt-8 border-t border-white/20 pt-5"
+                >
+                  <button
+                    onClick={logout}
+                    className="w-full rounded-xl border border-red-400/70 bg-red-500/10 px-3 py-2 font-medium text-red-200 transition hover:bg-red-500/20"
+                  >
+                    Logout
+                  </button>
                 </motion.div>
               )}
             </motion.aside>
