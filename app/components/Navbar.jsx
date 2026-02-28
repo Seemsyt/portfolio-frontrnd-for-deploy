@@ -41,6 +41,17 @@ const Navbar = () => {
     };
 
     void syncNavAuthState();
+    const handleAuthChange = () => {
+      void syncNavAuthState();
+    };
+
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("auth-changed", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("auth-changed", handleAuthChange);
+    };
   }, [pathname, API_BASE]);
 
   const logout = () => {
@@ -50,6 +61,7 @@ const Navbar = () => {
     setLoggedIn(false);
     setIsAdmin(false);
     setOpen(false);
+    window.dispatchEvent(new Event("auth-changed"));
     router.push("/login");
   };
 
@@ -125,11 +137,7 @@ const Navbar = () => {
                   <Link href="/xyzseemsxyz/projects_admin">CMS Dashboard</Link>
                 </motion.li>
               )}
-              {loggedIn && (
-                <motion.li variants={item}>
-                  <Link href="/profile">Profile</Link>
-                </motion.li>
-              )}
+              
               <li>
                 {!loggedIn && (
                   <div>

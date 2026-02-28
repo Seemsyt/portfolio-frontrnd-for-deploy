@@ -23,7 +23,7 @@ export default function Register() {
   });
 
   const autoLogin = async () => {
-    const res = await axios.post(`${API_BASE}/login/`, {
+    const res = await axios.post(`${API_BASE}login/`, {
       username: form.username,
       password: form.password,
     });
@@ -36,6 +36,7 @@ export default function Register() {
     } else {
       localStorage.removeItem("dashboard_secret");
     }
+    window.dispatchEvent(new Event("auth-changed"));
   };
 
   const handleRegister = async (e) => {
@@ -44,7 +45,7 @@ export default function Register() {
 
     try {
       setSubmitting(true);
-      await axios.post(`${API_BASE}/register/`, {
+      await axios.post(`${API_BASE}register/`, {
         username: form.username,
         email: form.email,
         password: form.password,

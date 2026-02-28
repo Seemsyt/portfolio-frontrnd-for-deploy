@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       setSubmitting(true);
-      const res = await axios.post(`${API_BASE}/login/`, {
+      const res = await axios.post(`${API_BASE}login/`, {
         username: form.username,
         password: form.password,
       });
@@ -40,6 +40,7 @@ export default function Login() {
       } else {
         localStorage.removeItem("dashboard_secret");
       }
+      window.dispatchEvent(new Event("auth-changed"));
 
       const nextPath =
         typeof window !== "undefined"
