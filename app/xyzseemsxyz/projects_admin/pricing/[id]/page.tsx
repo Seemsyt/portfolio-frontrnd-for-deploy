@@ -2,8 +2,9 @@
 
 import axios from 'axios';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getDashboardAuthHeaders, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type PricingForm = {
   title: string;
@@ -19,6 +20,7 @@ type PricingForm = {
 };
 
 export default function EditPricingPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const pricingId = params?.id;
   const rawApiBase =
@@ -39,6 +41,7 @@ export default function EditPricingPage() {
     feature_6: '',
   });
   const [loading, setLoading] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ type: '' | 'success' | 'error'; message: string }>({
     type: '',
@@ -48,9 +51,17 @@ export default function EditPricingPage() {
   useEffect(() => {
     const fetchPricing = async () => {
       if (!pricingId) return;
+      const accessResult = await verifyDashboardAccess(baseUrl);
+      if (!accessResult.allowed) {
+        router.replace('/login?next=/xyzseemsxyz/projects_admin');
+        return;
+      }
+
       try {
+        setCheckingAccess(false);
         setLoading(true);
-        const response = await axios.get(`${baseUrl}/pricing/${pricingId}/`);
+        const { headers } = getDashboardAuthHeaders();
+        const response = await axios.get(`${baseUrl}/pricing/${pricingId}/`, { headers });
         const data = response.data || {};
         setForm({
           title: data.title || '',
@@ -72,7 +83,7 @@ export default function EditPricingPage() {
     };
 
     fetchPricing();
-  }, [baseUrl, pricingId]);
+  }, [baseUrl, pricingId, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -85,18 +96,23 @@ export default function EditPricingPage() {
     try {
       setSaving(true);
       setStatus({ type: '', message: '' });
-      await axios.patch(`${baseUrl}/pricing/${pricingId}/`, {
-        title: form.title.trim(),
-        price: Number(form.price),
-        slug: form.slug.trim(),
-        is_admin: form.is_admin.trim(),
-        feature_1: form.feature_1.trim(),
-        feature_2: form.feature_2.trim(),
-        feature_3: form.feature_3.trim(),
-        feature_4: form.feature_4.trim(),
-        feature_5: form.feature_5.trim(),
-        feature_6: form.feature_6.trim(),
-      });
+      const { headers } = getDashboardAuthHeaders();
+      await axios.patch(
+        `${baseUrl}/pricing/${pricingId}/`,
+        {
+          title: form.title.trim(),
+          price: Number(form.price),
+          slug: form.slug.trim(),
+          is_admin: form.is_admin.trim(),
+          feature_1: form.feature_1.trim(),
+          feature_2: form.feature_2.trim(),
+          feature_3: form.feature_3.trim(),
+          feature_4: form.feature_4.trim(),
+          feature_5: form.feature_5.trim(),
+          feature_6: form.feature_6.trim(),
+        },
+        { headers }
+      );
       setStatus({ type: 'success', message: 'Pricing plan updated successfully.' });
     } catch {
       setStatus({ type: 'error', message: 'Failed to update pricing plan.' });
@@ -104,6 +120,17 @@ export default function EditPricingPage() {
       setSaving(false);
     }
   };
+
+  if (checkingAccess) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <span className="mr-3 inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-200 border-t-transparent" />
+          Checking dashboard access...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">

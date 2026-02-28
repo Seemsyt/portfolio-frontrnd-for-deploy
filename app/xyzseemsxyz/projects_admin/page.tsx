@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type Project = {
   id: number;
@@ -56,6 +58,7 @@ const resolveImage = (path: string | undefined, apiBase: string) => {
 };
 
 export default function ProjectsAdminPage() {
+  const router = useRouter();
   const rawApiBase =
     process.env.NEXT_PUBLIC_API_URL ||
     'https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/';
@@ -64,6 +67,7 @@ export default function ProjectsAdminPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [pricing, setPricing] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [error, setError] = useState('');
   const [lastSync, setLastSync] = useState<string>('');
 
@@ -79,9 +83,20 @@ export default function ProjectsAdminPage() {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchDashboardData = async () => {
+      const accessResult = await verifyDashboardAccess(baseUrl);
+      if (!accessResult.allowed) {
+        router.replace('/login?next=/xyzseemsxyz/projects_admin');
+        return;
+      }
+
       setLoading(true);
       setError('');
+      if (isMounted) {
+        setCheckingAccess(false);
+      }
 
       try {
         const [projectRes, pricingRes] = await Promise.allSettled([
@@ -119,7 +134,10 @@ export default function ProjectsAdminPage() {
     };
 
     fetchDashboardData();
-  }, [baseUrl]);
+    return () => {
+      isMounted = false;
+    };
+  }, [baseUrl, router]);
 
   const stats = useMemo(() => {
     const projectsWithLinks = projects.filter((project) => Boolean(project.live_link)).length;
@@ -164,6 +182,19 @@ export default function ProjectsAdminPage() {
       setContactSubmitting(false);
     }
   };
+
+  if (checkingAccess) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-center">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-5 text-slate-200">
+            <span className="mr-3 inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-200 border-t-transparent" />
+            Checking dashboard access...
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">

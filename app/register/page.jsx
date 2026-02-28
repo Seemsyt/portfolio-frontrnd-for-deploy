@@ -18,6 +18,8 @@ export default function Register() {
     username: "",
     email: "",
     password: "",
+    is_superuser: false,
+    admin_secret_key: "",
   });
 
   const autoLogin = async () => {
@@ -28,6 +30,12 @@ export default function Register() {
 
     localStorage.setItem("access", res.data.access);
     localStorage.setItem("refresh", res.data.refresh);
+    const trimmedSecret = form.admin_secret_key.trim();
+    if (trimmedSecret) {
+      localStorage.setItem("dashboard_secret", trimmedSecret);
+    } else {
+      localStorage.removeItem("dashboard_secret");
+    }
   };
 
   const handleRegister = async (e) => {
@@ -36,7 +44,13 @@ export default function Register() {
 
     try {
       setSubmitting(true);
-      await axios.post(`${API_BASE}/register/`, form);
+      await axios.post(`${API_BASE}/register/`, {
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        is_superuser: form.is_superuser,
+        admin_secret_key: form.admin_secret_key,
+      });
       await autoLogin();
       router.push("/");
     } catch (error) {
@@ -108,16 +122,43 @@ export default function Register() {
             />
             {errors.password && <p className="text-sm text-red-300">{errors.password}</p>}
 
+            <label className="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-900/40 p-3 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={form.is_superuser}
+                onChange={(e) => setForm({ ...form, is_superuser: e.target.checked })}
+              />
+              Create as superuser
+            </label>
+
+            <input
+              type="text"
+              placeholder="Admin secret key (required for superuser)"
+              value={form.admin_secret_key}
+              onChange={(e) => setForm({ ...form, admin_secret_key: e.target.value })}
+              className="rounded-xl border border-white/15 bg-slate-900/80 p-3 outline-none transition focus:border-cyan-300"
+            />
+            {errors.admin_secret_key && (
+              <p className="text-sm text-red-300">{errors.admin_secret_key}</p>
+            )}
+
             {errors.general && <p className="text-sm text-red-300">{errors.general}</p>}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="rounded-xl bg-cyan-300 p-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex items-center justify-center gap-2 rounded-xl bg-cyan-300 p-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"
               disabled={submitting}
             >
-              {submitting ? "Creating account..." : "Register"}
+              {submitting ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+                  Creating account...
+                </>
+              ) : (
+                "Register"
+              )}
             </motion.button>
           </form>
 

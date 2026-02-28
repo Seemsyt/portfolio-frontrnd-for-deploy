@@ -2,8 +2,9 @@
 
 import axios from 'axios';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { getDashboardAuthHeaders, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type ProjectForm = {
   title: string;
@@ -12,6 +13,7 @@ type ProjectForm = {
 };
 
 export default function EditProjectPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const projectId = params?.id;
   const rawApiBase =
@@ -25,6 +27,7 @@ export default function EditProjectPage() {
     live_link: '',
   });
   const [loading, setLoading] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ type: '' | 'success' | 'error'; message: string }>({
     type: '',
@@ -34,9 +37,17 @@ export default function EditProjectPage() {
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) return;
+      const accessResult = await verifyDashboardAccess(baseUrl);
+      if (!accessResult.allowed) {
+        router.replace('/login?next=/xyzseemsxyz/projects_admin');
+        return;
+      }
+
       try {
+        setCheckingAccess(false);
         setLoading(true);
-        const response = await axios.get(`${baseUrl}/projects/${projectId}/`);
+        const { headers } = getDashboardAuthHeaders();
+        const response = await axios.get(`${baseUrl}/projects/${projectId}/`, { headers });
         const data = response.data || {};
         setForm({
           title: data.title || '',
@@ -51,7 +62,7 @@ export default function EditProjectPage() {
     };
 
     fetchProject();
-  }, [baseUrl, projectId]);
+  }, [baseUrl, projectId, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -63,11 +74,16 @@ export default function EditProjectPage() {
     try {
       setSaving(true);
       setStatus({ type: '', message: '' });
-      await axios.patch(`${baseUrl}/projects/${projectId}/`, {
-        title: form.title.trim(),
-        discription: form.discription.trim(),
-        live_link: form.live_link.trim(),
-      });
+      const { headers } = getDashboardAuthHeaders();
+      await axios.patch(
+        `${baseUrl}/projects/${projectId}/`,
+        {
+          title: form.title.trim(),
+          discription: form.discription.trim(),
+          live_link: form.live_link.trim(),
+        },
+        { headers }
+      );
       setStatus({ type: 'success', message: 'Project updated successfully.' });
     } catch {
       setStatus({ type: 'error', message: 'Failed to update project.' });
@@ -75,6 +91,17 @@ export default function EditProjectPage() {
       setSaving(false);
     }
   };
+
+  if (checkingAccess) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">
+        <div className="mx-auto flex w-full max-w-3xl items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <span className="mr-3 inline-block h-4 w-4 animate-spin rounded-full border-2 border-cyan-200 border-t-transparent" />
+          Checking dashboard access...
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">

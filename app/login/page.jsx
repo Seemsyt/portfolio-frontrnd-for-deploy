@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
@@ -12,12 +12,14 @@ const API_BASE =
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     username: "",
     password: "",
+    dashboardSecretKey: "",
   });
 
   const handleLogin = async (e) => {
@@ -26,12 +28,22 @@ export default function Login() {
 
     try {
       setSubmitting(true);
-      const res = await axios.post(`${API_BASE}/login/`, form);
+      const res = await axios.post(`${API_BASE}/login/`, {
+        username: form.username,
+        password: form.password,
+      });
 
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
+      const trimmedSecret = form.dashboardSecretKey.trim();
+      if (trimmedSecret) {
+        localStorage.setItem("dashboard_secret", trimmedSecret);
+      } else {
+        localStorage.removeItem("dashboard_secret");
+      }
 
-      router.push("/");
+      const nextPath = searchParams.get("next") || "/";
+      router.push(nextPath);
     } catch (error) {
       const data = error?.response?.data;
       if (data && typeof data === "object") {
@@ -91,16 +103,31 @@ export default function Login() {
             />
             {errors.password && <p className="text-sm text-red-300">{errors.password}</p>}
 
+            <input
+              type="text"
+              placeholder="Dashboard secret key (optional)"
+              value={form.dashboardSecretKey}
+              onChange={(e) => setForm({ ...form, dashboardSecretKey: e.target.value })}
+              className="rounded-xl border border-white/15 bg-slate-900/80 p-3 outline-none transition focus:border-cyan-300"
+            />
+
             {errors.general && <p className="text-sm text-red-300">{errors.general}</p>}
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="rounded-xl bg-cyan-300 p-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex items-center justify-center gap-2 rounded-xl bg-cyan-300 p-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
               type="submit"
               disabled={submitting}
             >
-              {submitting ? "Logging in..." : "Login"}
+              {submitting ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </motion.button>
           </form>
 
