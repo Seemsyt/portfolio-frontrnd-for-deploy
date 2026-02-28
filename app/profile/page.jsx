@@ -1,44 +1,137 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
-export default function Profile(){
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
 
-  const [data, setData] = useState(null)
+export default function Profile() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(()=>{
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("access");
 
-    const token = localStorage.getItem("access")
-
-    fetch("https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/profile/", {
-
-      headers:{
-        Authorization: `Bearer ${token}`
+      if (!token) {
+        setError("You need to login to view your profile.");
+        setLoading(false);
+        return;
       }
 
-    })
-    .then(res => res.json())
-    .then(data => setData(data))
+      try {
+        const res = await fetch(`${API_BASE}profile/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  }, [])
+        const body = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(body?.detail || "Failed to load profile.");
+        }
+
+        setData(body);
+        setError("");
+      } catch (err) {
+        setData(null);
+        setError(err?.message || "Failed to load profile.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void fetchProfile();
+  }, []);
+
+  const isAdmin = useMemo(() => {
+    if (!data) return false;
+    return Boolean(data.is_superuser || data.is_staff);
+  }, [data]);
+
+  if (loading) {
+    return (
+      <section className="mx-auto mt-28 w-[92vw] max-w-3xl rounded-3xl border border-white/20 bg-black/35 p-8 text-white shadow-xl backdrop-blur-md">
+        <p className="text-sm text-slate-300">Loading profile...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="mx-auto mt-28 w-[92vw] max-w-3xl rounded-3xl border border-red-400/30 bg-red-500/10 p-8 text-white shadow-xl backdrop-blur-md">
+        <h1 className="text-2xl font-semibold">Profile</h1>
+        <p className="mt-3 text-sm text-red-100">{error}</p>
+        <div className="mt-6">
+          <Link
+            href="/login"
+            className="inline-flex rounded-xl border border-white/40 px-4 py-2 text-sm font-medium transition hover:bg-white hover:text-slate-900"
+          >
+            Go to Login
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
+    <section className="mx-auto mt-28 w-[92vw] max-w-3xl rounded-3xl border border-white/20 bg-black/35 p-8 text-white shadow-xl backdrop-blur-md">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">My Profile</h1>
+          <p className="mt-1 text-sm text-slate-300">Signed in account details</p>
+        </div>
 
-    <div>
+        <div className="flex flex-wrap gap-2">
+          {isAdmin && (
+            <Link
+              href="/xyzseemsxyz/projects_admin"
+              className="rounded-xl bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-cyan-200"
+            >
+              Open Dashboard
+            </Link>
+          )}
+          <Link
+            href="/projects"
+            className="rounded-xl border border-white/40 px-4 py-2 text-sm font-medium transition hover:bg-white hover:text-slate-900"
+          >
+            View Projects
+          </Link>
+        </div>
+      </div>
 
-      <h1>Protected Data</h1>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <article className="rounded-2xl border border-white/15 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">User ID</p>
+          <p className="mt-2 text-lg font-semibold">{data.id}</p>
+        </article>
 
-      {data && (
+        <article className="rounded-2xl border border-white/15 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Username</p>
+          <p className="mt-2 text-lg font-semibold">{data.username}</p>
+        </article>
 
-        <>
-          <p>ID: {data.id}</p>
-          <p>Username: {data.username}</p>
-          <p>Email: {data.email}</p>
-          <p>{data.message}</p>
-        </>
+        <article className="rounded-2xl border border-white/15 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Email</p>
+          <p className="mt-2 text-lg font-semibold break-all">{data.email}</p>
+        </article>
 
+        <article className="rounded-2xl border border-white/15 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Role</p>
+          <p className="mt-2 text-lg font-semibold">
+            {isAdmin ? "Admin" : "Standard User"}
+          </p>
+        </article>
+      </div>
+
+      {data.message && (
+        <p className="mt-6 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-200">
+          {data.message}
+        </p>
       )}
-
-    </div>
-  )
+    </section>
+  );
 }

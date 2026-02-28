@@ -2,11 +2,12 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const [loggedIn, setLoggedIn] = useState(false);
@@ -16,26 +17,30 @@ const Navbar = () => {
     "https://portfolio-backend-for-deploy-zwf7.onrender.com/api/auth/";
 
   useEffect(() => {
-    const token = localStorage.getItem("access");
-    setLoggedIn(!!token);
-    setIsAdmin(false);
+    const syncNavAuthState = async () => {
+      const token = localStorage.getItem("access");
+      setLoggedIn(!!token);
+      setOpen(false);
 
-    if (token) {
-      fetch(`${API_BASE}profile/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          setIsAdmin(!!(data?.is_superuser || data?.is_staff));
-        })
-        .catch(() => {
-          setIsAdmin(false);
+      if (!token) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}profile/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-    }
+        const data = res.ok ? await res.json() : null;
+        setIsAdmin(!!(data?.is_superuser || data?.is_staff));
+      } catch {
+        setIsAdmin(false);
+      }
+    };
 
-    setOpen(false);
+    void syncNavAuthState();
   }, [pathname, API_BASE]);
 
   const logout = () => {
@@ -45,6 +50,7 @@ const Navbar = () => {
     setLoggedIn(false);
     setIsAdmin(false);
     setOpen(false);
+    router.push("/login");
   };
 
   const container = {
@@ -119,6 +125,11 @@ const Navbar = () => {
                   <Link href="/xyzseemsxyz/projects_admin">CMS Dashboard</Link>
                 </motion.li>
               )}
+              {loggedIn && (
+                <motion.li variants={item}>
+                  <Link href="/profile">Profile</Link>
+                </motion.li>
+              )}
               <li>
                 {!loggedIn && (
                   <div>
@@ -141,12 +152,31 @@ const Navbar = () => {
             />
             <button>🔍</button> */}
             {loggedIn && (
-              <button
-                className=" border-2 border-red-600 rounded-2xl p-1"
-                onClick={logout}
-              >
-                logout
-              </button>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/profile"
+                  aria-label="Open profile"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white hover:text-slate-900"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-5 w-5"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="8" r="4" />
+                  </svg>
+                </Link>
+                <button
+                  className=" border-2 border-red-600 rounded-2xl p-1"
+                  onClick={logout}
+                >
+                  logout
+                </button>
+              </div>
             )}
           </div>
 
@@ -260,6 +290,16 @@ const Navbar = () => {
                       className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
                     >
                       CMS Dashboard
+                    </Link>
+                  </motion.li>
+                )}
+                {loggedIn && (
+                  <motion.li variants={mobileItem}>
+                    <Link
+                      href="/profile"
+                      className="block rounded-xl px-4 py-3 transition hover:bg-white/10"
+                    >
+                      Profile
                     </Link>
                   </motion.li>
                 )}
