@@ -118,6 +118,11 @@ export default function ProjectsAdminPage() {
     type: '',
     message: '',
   });
+  const [projectDeletingId, setProjectDeletingId] = useState<number | null>(null);
+  const [projectDeleteStatus, setProjectDeleteStatus] = useState<SaveStatus>({
+    type: '',
+    message: '',
+  });
 
   const [pricingCreateForm, setPricingCreateForm] = useState<PricingCreateForm>({
     title: '',
@@ -133,6 +138,11 @@ export default function ProjectsAdminPage() {
   });
   const [pricingCreating, setPricingCreating] = useState(false);
   const [pricingCreateStatus, setPricingCreateStatus] = useState<SaveStatus>({
+    type: '',
+    message: '',
+  });
+  const [pricingDeletingId, setPricingDeletingId] = useState<number | null>(null);
+  const [pricingDeleteStatus, setPricingDeleteStatus] = useState<SaveStatus>({
     type: '',
     message: '',
   });
@@ -337,6 +347,48 @@ export default function ProjectsAdminPage() {
     }
   };
 
+  const handleDeleteProject = async (projectId: number) => {
+    const confirmed = window.confirm('Delete this project permanently?');
+    if (!confirmed) return;
+
+    try {
+      setProjectDeletingId(projectId);
+      setProjectDeleteStatus({ type: '', message: '' });
+      const { headers } = getDashboardAuthHeaders();
+      await axios.delete(`${baseUrl}/projects/${projectId}/`, { headers });
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+      setProjectDeleteStatus({ type: 'success', message: 'Project deleted successfully.' });
+    } catch (deleteError: unknown) {
+      const backendMessage =
+        (deleteError as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        'Failed to delete project.';
+      setProjectDeleteStatus({ type: 'error', message: backendMessage });
+    } finally {
+      setProjectDeletingId(null);
+    }
+  };
+
+  const handleDeletePricing = async (planId: number) => {
+    const confirmed = window.confirm('Delete this pricing plan permanently?');
+    if (!confirmed) return;
+
+    try {
+      setPricingDeletingId(planId);
+      setPricingDeleteStatus({ type: '', message: '' });
+      const { headers } = getDashboardAuthHeaders();
+      await axios.delete(`${baseUrl}/pricing/${planId}/`, { headers });
+      setPricing((prev) => prev.filter((plan) => plan.id !== planId));
+      setPricingDeleteStatus({ type: 'success', message: 'Pricing plan deleted successfully.' });
+    } catch (deleteError: unknown) {
+      const backendMessage =
+        (deleteError as { response?: { data?: { detail?: string } } })?.response?.data?.detail ??
+        'Failed to delete pricing plan.';
+      setPricingDeleteStatus({ type: 'error', message: backendMessage });
+    } finally {
+      setPricingDeletingId(null);
+    }
+  };
+
   if (checkingAccess) {
     return (
       <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 px-4 pb-16 pt-32 text-white md:px-8 md:pt-36">
@@ -399,7 +451,7 @@ export default function ProjectsAdminPage() {
           <section id="projects" className="xl:col-span-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold">Projects</h2>
-              <p className="text-xs text-slate-400">`GET /projects/`, `POST /projects/`, `PATCH /projects/:id/`</p>
+              <p className="text-xs text-slate-400">`GET /projects/`, `POST /projects/`, `PATCH /projects/:id/`, `DELETE /projects/:id/`</p>
             </div>
 
             <div className="overflow-x-auto">
@@ -449,6 +501,14 @@ export default function ProjectsAdminPage() {
                         >
                           Edit
                         </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProject(project.id)}
+                          disabled={projectDeletingId === project.id}
+                          className="ml-2 rounded-md border border-red-300/40 bg-red-300/10 px-2 py-1 text-xs text-red-200 hover:bg-red-300/20 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {projectDeletingId === project.id ? 'Deleting...' : 'Delete'}
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -462,13 +522,18 @@ export default function ProjectsAdminPage() {
                 </tbody>
               </table>
             </div>
+            {projectDeleteStatus.message && (
+              <p className={`mt-3 text-xs ${projectDeleteStatus.type === 'success' ? 'text-emerald-300' : 'text-red-300'}`}>
+                {projectDeleteStatus.message}
+              </p>
+            )}
           </section>
 
           <div className="xl:col-span-2 grid grid-cols-1 gap-6">
             <section id="pricing" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Pricing</h2>
-                <p className="text-xs text-slate-400">`GET /pricing/`, `POST /pricing/`, `PATCH /pricing/:id/`</p>
+                <p className="text-xs text-slate-400">`GET /pricing/`, `POST /pricing/`, `PATCH /pricing/:id/`, `DELETE /pricing/:id/`</p>
               </div>
 
               <div className="space-y-3">
@@ -487,13 +552,21 @@ export default function ProjectsAdminPage() {
                         <li key={`${plan.id}-${feature}`}>• {feature}</li>
                       ))}
                     </ul>
-                    <div className="mt-3">
+                    <div className="mt-3 flex items-center gap-2">
                       <Link
                         href={`/xyzseemsxyz/projects_admin/pricing/${plan.id}`}
                         className="rounded-md border border-white/20 px-2 py-1 text-xs text-slate-200 hover:bg-white/10"
                       >
                         Edit Plan
                       </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePricing(plan.id)}
+                        disabled={pricingDeletingId === plan.id}
+                        className="rounded-md border border-red-300/40 bg-red-300/10 px-2 py-1 text-xs text-red-200 hover:bg-red-300/20 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {pricingDeletingId === plan.id ? 'Deleting...' : 'Delete'}
+                      </button>
                     </div>
                   </article>
                 ))}
@@ -501,6 +574,11 @@ export default function ProjectsAdminPage() {
                   <p className="text-sm text-slate-400">No pricing plans returned from API.</p>
                 )}
               </div>
+              {pricingDeleteStatus.message && (
+                <p className={`mt-3 text-xs ${pricingDeleteStatus.type === 'success' ? 'text-emerald-300' : 'text-red-300'}`}>
+                  {pricingDeleteStatus.message}
+                </p>
+              )}
             </section>
 
             <section id="add-project" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -694,10 +772,10 @@ export default function ProjectsAdminPage() {
               <h2 className="text-xl font-semibold">Backend Capability</h2>
               <ul className="mt-3 space-y-2 text-sm text-slate-300">
                 <li>
-                  <span className="text-cyan-200">Project:</span> list + create + detail edit enabled.
+                  <span className="text-cyan-200">Project:</span> list + create + detail edit + delete enabled.
                 </li>
                 <li>
-                  <span className="text-cyan-200">Pricing:</span> list + create + detail edit enabled.
+                  <span className="text-cyan-200">Pricing:</span> list + create + detail edit + delete enabled.
                 </li>
                 <li>
                   <span className="text-cyan-200">Contact:</span> create (submit) enabled.
