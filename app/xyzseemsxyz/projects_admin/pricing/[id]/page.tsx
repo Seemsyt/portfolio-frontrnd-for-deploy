@@ -18,6 +18,19 @@ type PricingForm = {
   feature_6: string;
 };
 
+type PricingApiResponse = {
+  title?: string;
+  price?: number | string;
+  slug?: string;
+  is_admin?: string;
+  feature_1?: string;
+  feature_2?: string;
+  feature_3?: string;
+  feature_4?: string;
+  feature_5?: string;
+  feature_6?: string;
+};
+
 export default function EditPricingPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -59,7 +72,11 @@ export default function EditPricingPage() {
       try {
         setCheckingAccess(false);
         setLoading(true);
-        const response = await authenticatedRequest(baseUrl, { method: 'get', url: `/pricing/${pricingId}/` }, { includeDashboardKey: true });
+        const response = await authenticatedRequest<PricingApiResponse>(
+          baseUrl,
+          { method: 'get', url: `/pricing/${pricingId}/` },
+          { includeDashboardKey: true }
+        );
         const data = response.data || {};
         setForm({
           title: data.title || '',

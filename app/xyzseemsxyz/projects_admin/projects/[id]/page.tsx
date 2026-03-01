@@ -11,6 +11,12 @@ type ProjectForm = {
   live_link: string;
 };
 
+type ProjectApiResponse = {
+  title?: string;
+  discription?: string;
+  live_link?: string;
+};
+
 export default function EditProjectPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -45,7 +51,11 @@ export default function EditProjectPage() {
       try {
         setCheckingAccess(false);
         setLoading(true);
-        const response = await authenticatedRequest(baseUrl, { method: 'get', url: `/projects/${projectId}/` }, { includeDashboardKey: true });
+        const response = await authenticatedRequest<ProjectApiResponse>(
+          baseUrl,
+          { method: 'get', url: `/projects/${projectId}/` },
+          { includeDashboardKey: true }
+        );
         const data = response.data || {};
         setForm({
           title: data.title || '',
