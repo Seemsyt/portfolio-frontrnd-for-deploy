@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getDashboardAuthHeaders, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
+import { authenticatedRequest, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type Project = {
   id: number;
@@ -272,8 +272,7 @@ export default function ProjectsAdminPage() {
     try {
       setProjectCreating(true);
       setProjectCreateStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.post(`${baseUrl}/projects/`, formData, { headers });
+      await authenticatedRequest(baseUrl, { method: 'post', url: '/projects/', data: formData }, { includeDashboardKey: true });
       await fetchCollections();
       setProjectCreateForm({ title: '', discription: '', live_link: '', image: null });
       setProjectCreateStatus({ type: 'success', message: 'New project created successfully.' });
@@ -306,10 +305,12 @@ export default function ProjectsAdminPage() {
     try {
       setPricingCreating(true);
       setPricingCreateStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.post(
-        `${baseUrl}/pricing/`,
+      await authenticatedRequest(
+        baseUrl,
         {
+          method: 'post',
+          url: '/pricing/',
+          data: {
           title: pricingCreateForm.title.trim(),
           price: Number(pricingCreateForm.price),
           slug: pricingCreateForm.slug.trim(),
@@ -320,8 +321,9 @@ export default function ProjectsAdminPage() {
           feature_4: pricingCreateForm.feature_4.trim(),
           feature_5: pricingCreateForm.feature_5.trim(),
           feature_6: pricingCreateForm.feature_6.trim(),
+          },
         },
-        { headers }
+        { includeDashboardKey: true }
       );
       await fetchCollections();
       setPricingCreateForm({
@@ -354,8 +356,7 @@ export default function ProjectsAdminPage() {
     try {
       setProjectDeletingId(projectId);
       setProjectDeleteStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.delete(`${baseUrl}/projects/${projectId}/`, { headers });
+      await authenticatedRequest(baseUrl, { method: 'delete', url: `/projects/${projectId}/` }, { includeDashboardKey: true });
       setProjects((prev) => prev.filter((project) => project.id !== projectId));
       setProjectDeleteStatus({ type: 'success', message: 'Project deleted successfully.' });
     } catch (deleteError: unknown) {
@@ -375,8 +376,7 @@ export default function ProjectsAdminPage() {
     try {
       setPricingDeletingId(planId);
       setPricingDeleteStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.delete(`${baseUrl}/pricing/${planId}/`, { headers });
+      await authenticatedRequest(baseUrl, { method: 'delete', url: `/pricing/${planId}/` }, { includeDashboardKey: true });
       setPricing((prev) => prev.filter((plan) => plan.id !== planId));
       setPricingDeleteStatus({ type: 'success', message: 'Pricing plan deleted successfully.' });
     } catch (deleteError: unknown) {

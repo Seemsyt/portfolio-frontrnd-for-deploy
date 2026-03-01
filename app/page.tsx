@@ -4,6 +4,7 @@ import Card from "./components/Card";
 import Link from "next/link";
 import Skill from "./components/skill";
 import { motion } from "motion/react";
+import HeroOrb from "./components/HeroOrb";
 
 export default function Home() {
   return (
@@ -17,7 +18,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-[url(/bg2.jpg)] bg-cover bg-center opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/75 to-cyan-900/45" />
 
-        <main className="relative mx-auto flex min-h-[88vh] w-full max-w-6xl items-center px-6 pb-16 pt-36 md:pt-40">
+        <main className="relative mx-auto grid min-h-[88vh] w-full max-w-6xl items-center gap-10 px-6 pb-16 pt-36 md:grid-cols-[1.05fr_0.95fr] md:pt-40">
           <div className="max-w-3xl">
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -87,6 +88,14 @@ export default function Home() {
               </div>
             </motion.div>
           </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 24 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.8 }}
+            className="relative h-[340px] w-full md:h-[520px]"
+          >
+            <HeroOrb />
+          </motion.div>
         </main>
       </motion.section>
 

@@ -1,10 +1,9 @@
 'use client';
 
-import axios from 'axios';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getDashboardAuthHeaders, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
+import { authenticatedRequest, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type PricingForm = {
   title: string;
@@ -60,8 +59,7 @@ export default function EditPricingPage() {
       try {
         setCheckingAccess(false);
         setLoading(true);
-        const { headers } = getDashboardAuthHeaders();
-        const response = await axios.get(`${baseUrl}/pricing/${pricingId}/`, { headers });
+        const response = await authenticatedRequest(baseUrl, { method: 'get', url: `/pricing/${pricingId}/` }, { includeDashboardKey: true });
         const data = response.data || {};
         setForm({
           title: data.title || '',
@@ -96,10 +94,12 @@ export default function EditPricingPage() {
     try {
       setSaving(true);
       setStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.patch(
-        `${baseUrl}/pricing/${pricingId}/`,
+      await authenticatedRequest(
+        baseUrl,
         {
+          method: 'patch',
+          url: `/pricing/${pricingId}/`,
+          data: {
           title: form.title.trim(),
           price: Number(form.price),
           slug: form.slug.trim(),
@@ -110,8 +110,9 @@ export default function EditPricingPage() {
           feature_4: form.feature_4.trim(),
           feature_5: form.feature_5.trim(),
           feature_6: form.feature_6.trim(),
+          },
         },
-        { headers }
+        { includeDashboardKey: true }
       );
       setStatus({ type: 'success', message: 'Pricing plan updated successfully.' });
     } catch {

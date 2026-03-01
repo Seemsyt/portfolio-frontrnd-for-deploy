@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
+import { authenticatedRequest } from "@/app/lib/dashboardAuth";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -20,23 +21,25 @@ const Navbar = () => {
   useEffect(() => {
     const syncNavAuthState = async () => {
       const token = localStorage.getItem("access");
-      setLoggedIn(!!token);
+      const refresh = localStorage.getItem("refresh");
+      setLoggedIn(Boolean(token || refresh));
       setOpen(false);
 
-      if (!token) {
+      if (!token && !refresh) {
         setIsAdmin(false);
         return;
       }
 
       try {
-        const res = await fetch(`${API_BASE}profile/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await authenticatedRequest(API_BASE, {
+          method: "get",
+          url: "/profile/",
         });
-        const data = res.ok ? await res.json() : null;
-        setIsAdmin(!!(data?.is_superuser || data?.is_staff));
+        const data = response?.data;
+        setLoggedIn(true);
+        setIsAdmin(Boolean(data?.is_superuser || data?.is_staff));
       } catch {
+        setLoggedIn(false);
         setIsAdmin(false);
       }
     };

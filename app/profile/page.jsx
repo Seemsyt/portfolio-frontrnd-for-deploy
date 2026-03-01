@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { authenticatedRequest } from "@/app/lib/dashboardAuth";
 
 const API_BASE =
   (process.env.NEXT_PUBLIC_API_URL ||
@@ -16,26 +17,20 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("access");
+      const refresh = localStorage.getItem("refresh");
 
-      if (!token) {
+      if (!token && !refresh) {
         setError("You need to login to view your profile.");
         setLoading(false);
         return;
       }
 
       try {
-        const res = await fetch(`${API_BASE}profile/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await authenticatedRequest(API_BASE, {
+          method: "get",
+          url: "/profile/",
         });
-
-        const body = await res.json().catch(() => null);
-        if (!res.ok) {
-          throw new Error(body?.detail || "Failed to load profile.");
-        }
-
-        setData(body);
+        setData(response.data);
         setError("");
       } catch (err) {
         setData(null);

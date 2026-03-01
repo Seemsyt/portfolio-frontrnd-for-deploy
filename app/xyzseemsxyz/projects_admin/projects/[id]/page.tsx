@@ -1,10 +1,9 @@
 'use client';
 
-import axios from 'axios';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { getDashboardAuthHeaders, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
+import { authenticatedRequest, verifyDashboardAccess } from '@/app/lib/dashboardAuth';
 
 type ProjectForm = {
   title: string;
@@ -46,8 +45,7 @@ export default function EditProjectPage() {
       try {
         setCheckingAccess(false);
         setLoading(true);
-        const { headers } = getDashboardAuthHeaders();
-        const response = await axios.get(`${baseUrl}/projects/${projectId}/`, { headers });
+        const response = await authenticatedRequest(baseUrl, { method: 'get', url: `/projects/${projectId}/` }, { includeDashboardKey: true });
         const data = response.data || {};
         setForm({
           title: data.title || '',
@@ -74,15 +72,18 @@ export default function EditProjectPage() {
     try {
       setSaving(true);
       setStatus({ type: '', message: '' });
-      const { headers } = getDashboardAuthHeaders();
-      await axios.patch(
-        `${baseUrl}/projects/${projectId}/`,
+      await authenticatedRequest(
+        baseUrl,
         {
+          method: 'patch',
+          url: `/projects/${projectId}/`,
+          data: {
           title: form.title.trim(),
           discription: form.discription.trim(),
           live_link: form.live_link.trim(),
+          },
         },
-        { headers }
+        { includeDashboardKey: true }
       );
       setStatus({ type: 'success', message: 'Project updated successfully.' });
     } catch {
