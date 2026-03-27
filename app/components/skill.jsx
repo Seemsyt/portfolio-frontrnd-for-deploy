@@ -11,7 +11,7 @@ const skills = [
   },
   {
     title: "Backend Development",
-    stack: "Django, DRF, API Design",
+    stack: "Django, DRF, Fastapi , API devlopment",
     summary: "Creates secure APIs with auth, data validation, and admin tools.",
     level: 82
   },
